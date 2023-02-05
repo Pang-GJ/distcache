@@ -11,7 +11,7 @@ struct GetStringSize {
 };
 
 TEST_CASE("test get, add") {
-  auto lru = std::make_unique<LRUCache<std::string, GetStringSize>>();
+  auto lru = std::make_unique<LRU<std::string, GetStringSize>>();
   lru->Add("key1", "1234");
   lru->Add("key2", "5678");
   std::string res;
@@ -31,7 +31,7 @@ TEST_CASE("test evicte") {
   std::string val2("456");
   std::string val3("789");
   auto cap = key1.size() + key2.size() + val1.size() + val2.size();
-  auto lru = std::make_unique<LRUCache<std::string, GetStringSize>>(cap);
+  auto lru = std::make_unique<LRU<std::string, GetStringSize>>(cap);
   lru->Add(key1, val1);
   lru->Add(key2, val2);
   lru->Add(key3, val3);

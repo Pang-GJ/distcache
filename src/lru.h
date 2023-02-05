@@ -8,23 +8,26 @@
 
 using KeyType = std::string;
 
-template <typename ValueType>
+template <typename ValueType = std::string>
 struct DefaultSizeOf {
-  auto operator()(const ValueType &value) -> size_t { return sizeof(value); }
+  auto operator()(const ValueType &value) -> size_t {
+    // Default value type: std::string
+    return value.size();
+  }
 };
 
 template <typename ValueType, typename SizeOf = DefaultSizeOf<ValueType>>
-class LRUCache {
+class LRU {
  public:
   // max_bytes==0 means no limit size
-  explicit LRUCache(int64_t max_bytes = 0) : max_bytes_(max_bytes) {
+  explicit LRU(int64_t max_bytes = 0) : max_bytes_(max_bytes) {
     head_ = new Entry();
     tail_ = new Entry();
     head_->next_ = tail_;
     tail_->prev_ = head_;
   }
 
-  ~LRUCache() {
+  ~LRU() {
     auto entry = head_->next_;
     while (entry != tail_) {
       auto tmp = entry;
@@ -47,7 +50,7 @@ class LRUCache {
   };
 
   // value是出参
-  auto Get(const KeyType &key, ValueType *value) -> bool {
+  bool Get(const KeyType &key, ValueType *value) {
     if (hashmap_.count(key) == 0) {
       return false;
     }
@@ -76,7 +79,7 @@ class LRUCache {
     }
   }
 
-  auto Size() const -> size_t { return hashmap_.size(); }
+  size_t Size() const { return hashmap_.size(); }
 
  private:
   void Evicte() {
@@ -103,18 +106,18 @@ class LRUCache {
     head_->next_ = entry;
   }
 
-  auto PushToFront(const KeyType &key, const ValueType &value) -> Entry * {
+  Entry *PushToFront(const KeyType &key, const ValueType &value) {
     auto entry = new Entry(key, value);
     MoveToFront(entry);
     return entry;
   }
 
-  auto GetLast() const -> Entry * { return tail_->prev_; }
+  Entry *GetLast() const { return tail_->prev_; }
 
   Entry *head_;
   Entry *tail_;
   std::unordered_map<KeyType, Entry *> hashmap_;
   int64_t max_bytes_;
-  int64_t bytes_{0};  // bytes不包括std::string中的额外开销
-  SizeOf get_size_functor_; // 函数对象，用于获取value的size
+  int64_t bytes_{0};         // bytes不包括std::string中的额外开销
+  SizeOf get_size_functor_;  // 函数对象，用于获取value的size
 };
